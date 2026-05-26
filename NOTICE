@@ -1,0 +1,15 @@
+WebAV
+Copyright (C) 2026 Guys' & St Thomas' NHS Foundation Trust - Simulation & Interactive Learning - Gareth Power
+
+This repository is distributed under the GNU Affero General Public License,
+version 3 or, at your option, any later version. See LICENSE for the full
+license text.
+
+This project is an independent web application built around the VDO.Ninja
+service and integration model. Parts of its behavior, configuration approach,
+and/or implementation may be derived from or informed by the VDO.Ninja project,
+which is a separate work by Stephen Seguin and contributors.
+
+VDO.Ninja is not owned by this repository's copyright holder. Upstream
+VDO.Ninja licensing and attribution notices should be preserved where
+applicable.

@@ -92,6 +92,6 @@ This project is licensed under the GNU Affero General Public License v3.0 or lat
 
 Copyright (C) 2026 Guys' & St Thomas' NHS Foundation Trust - Simulation & Interactive Learning - Gareth Power.
 
-This repository is an independent web application built around the VDO.Ninja service and integration model. Parts of its behavior, configuration approach, and/or implementation may be derived from or informed by the VDO.Ninja project, which is a separate work by Stephen Seguin and contributors.
+Repository-specific attribution and derived-work notice: see [NOTICE](NOTICE).
 
 VDO.Ninja remains a separate upstream project with its own licensing and attribution requirements.
