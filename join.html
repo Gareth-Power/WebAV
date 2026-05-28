@@ -58,7 +58,7 @@
 			content.innerHTML = `<div class="notice">Missing room code. Please open this page from the generated camera link.</div>`;
 		} else {
 			const room = suppliedRoom.replace(/[^a-zA-Z0-9]/g, "");
-			const joinUrl = `https://vdo.ninja/?room=${encodeURIComponent(room)}&autostart&webcam=1&audio=1&video=1&framerate=30&facingMode=environment&codec=vp8&audiobitrate=320&samplerate=48000&stereo=1&opusvoice=0&agc=1&noiseSuppression=0&echoCancellation=0&hidemenu=0&view=0&chatbutton=0&screensharebutton=1`;
+			const joinUrl = `https://vdo.ninja/?room=${encodeURIComponent(room)}&autostart&webcam=1&audio=1&video=1&framerate=30&facingMode=environment&codec=vp8&audiobitrate=320&samplerate=48000&stereo=1&opusvoice=0&agc=1&noiseSuppression=0&echoCancellation=1&hidemenu=0&view=0&chatbutton=0&screensharebutton=1`;
 
 					const wrap = document.createElement("div");
 					wrap.className = "frame-wrap";
