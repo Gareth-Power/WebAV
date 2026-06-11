@@ -2,48 +2,101 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>Camera Join</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<title>Join</title>
 	<style>
 		:root {
 			color-scheme: light;
-			--bg: #f8fafc;
+			--bg: #ffffff;
+			--accent: #2563eb;
+			--text: #1d1d1f;
+			--muted: #86868b;
 			--border: #e5e7eb;
-			--text: #0f172a;
-			--muted: #6b7280;
 		}
 
-		* { box-sizing: border-box; }
+		* { box-sizing: border-box; margin: 0; padding: 0; }
 
-			body {
-				margin: 0;
-				min-height: 100vh;
-				background: var(--bg);
-				color: var(--text);
-				font-family: "Inter", system-ui, -apple-system, sans-serif;
-			}
+		body {
+			min-height: 100vh;
+			background: var(--bg);
+			color: var(--text);
+			font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
+			display: grid;
+			place-items: center;
+			padding: 24px;
+		}
 
-			.frame-wrap {
-				position: fixed;
-				inset: 0;
-				background: #000;
-			}
+		.frame-wrap {
+			position: fixed;
+			inset: 0;
+			background: #000;
+		}
 
-			iframe {
-				width: 100%;
-				height: 100%;
-				border: none;
-				display: block;
-			}
+		iframe {
+			width: 100%;
+			height: 100%;
+			border: none;
+			display: block;
+		}
 
-			.notice {
-				text-align: center;
-				color: var(--muted);
-				padding: 40px 24px;
-				max-width: 520px;
-				line-height: 1.5;
-				margin: 0 auto;
-			}
+		.notice {
+			text-align: center;
+			color: var(--muted);
+			padding: 40px 24px;
+			max-width: 520px;
+			line-height: 1.5;
+			margin: 0 auto;
+		}
+
+		.chooser {
+			width: min(420px, 100%);
+			display: grid;
+			gap: 22px;
+			justify-items: center;
+			text-align: center;
+		}
+
+		.chooser h1 {
+			font-size: 22px;
+			font-weight: 600;
+			letter-spacing: -0.2px;
+		}
+
+		.chooser .sub {
+			color: var(--muted);
+			font-size: 14px;
+			line-height: 1.5;
+			margin-top: -10px;
+		}
+
+		.choices {
+			display: grid;
+			gap: 14px;
+			width: 100%;
+		}
+
+		.choice {
+			display: flex;
+			align-items: center;
+			gap: 16px;
+			width: 100%;
+			text-align: left;
+			background: #f5f5f7;
+			border: 1px solid var(--border);
+			border-radius: 18px;
+			padding: 18px 20px;
+			cursor: pointer;
+			font-family: inherit;
+			color: var(--text);
+			transition: background 120ms ease, border-color 120ms ease, transform 80ms ease;
+		}
+
+		.choice:hover { background: #ececed; border-color: #d6d6db; }
+		.choice:active { transform: scale(0.99); }
+
+		.choice .label { display: grid; gap: 2px; }
+		.choice .title { font-size: 16px; font-weight: 600; }
+		.choice .desc { font-size: 13px; color: var(--muted); line-height: 1.4; }
 	</style>
 </head>
 <body>
@@ -58,20 +111,54 @@
 			content.innerHTML = `<div class="notice">Missing room code. Please open this page from the generated camera link.</div>`;
 		} else {
 			const room = suppliedRoom.replace(/[^a-zA-Z0-9]/g, "");
-			const joinUrl = `https://vdo.ninja/?room=${encodeURIComponent(room)}&autostart&webcam=1&audio=1&video=1&framerate=30&facingMode=environment&codec=vp8&audiobitrate=320&samplerate=48000&stereo=1&opusvoice=0&agc=1&noiseSuppression=0&echoCancellation=1&hidemenu=0&view=0&chatbutton=0&screensharebutton=1`;
 
-					const wrap = document.createElement("div");
-					wrap.className = "frame-wrap";
-					wrap.innerHTML = `
-						<iframe
-							src="${joinUrl}"
-							title="Camera Join"
-							allow="camera *; microphone *; display-capture *; autoplay *; clipboard-read *; clipboard-write *"
-							allowfullscreen
-							referrerpolicy="origin"
-						></iframe>
-					`;
-					content.replaceChildren(wrap);
+			// Publisher URLs. Camera mirrors the original auto-start webcam flow.
+			// Screen share publishes via &screenshare and tags &smallshare so it
+			// tiles at the same size as cameras in the monitor.
+			const urls = {
+				camera: `https://vdo.ninja/?room=${encodeURIComponent(room)}&autostart&webcam=1&audio=1&video=1&framerate=30&facingMode=environment&codec=vp8&audiobitrate=320&samplerate=48000&stereo=1&opusvoice=0&agc=1&noiseSuppression=0&echoCancellation=1&hidemenu=0&directoronly&chatbutton=0&nofileshare&transparent`,
+				screen: `https://vdo.ninja/?room=${encodeURIComponent(room)}&screenshare&autostart&smallshare&codec=vp8&hidemenu=0&directoronly&chatbutton=0&transparent`,
+			};
+
+			const launch = (mode) => {
+				const wrap = document.createElement("div");
+				wrap.className = "frame-wrap";
+				const iframe = document.createElement("iframe");
+				iframe.src = urls[mode];
+				iframe.title = mode === "screen" ? "Screen Share Join" : "Camera Join";
+				iframe.allow = "camera *; microphone *; display-capture *; autoplay *; clipboard-read *; clipboard-write *";
+				iframe.allowFullscreen = true;
+				iframe.referrerPolicy = "origin";
+				wrap.appendChild(iframe);
+				content.replaceChildren(wrap);
+			};
+
+			const chooser = document.createElement("div");
+			chooser.className = "chooser";
+			chooser.innerHTML = `
+				<div>
+					<h1>Join the session</h1>
+				</div>
+				<p class="sub">Choose what you'd like to share into the monitor.</p>
+				<div class="choices">
+					<button class="choice" type="button" data-mode="camera">
+						<span class="label">
+							<span class="title">Camera</span>
+							<span class="desc">Share this device's camera and microphone.</span>
+						</span>
+					</button>
+					<button class="choice" type="button" data-mode="screen">
+						<span class="label">
+							<span class="title">Screen share</span>
+							<span class="desc">Share a window, tab, or your whole screen. (Not supported on iPhone/iPad.)</span>
+						</span>
+					</button>
+				</div>
+			`;
+			chooser.querySelectorAll(".choice").forEach((btn) => {
+				btn.addEventListener("click", () => launch(btn.dataset.mode));
+			});
+			content.replaceChildren(chooser);
 		}
 	</script>
 </body>
