@@ -131,29 +131,14 @@
 
     .stage { position: relative; width: 100%; }
 
-    /* Laid over the viewer on each camera's picture (positions are the
-       layout's, in percent): a red badge on a muted camera, and an outline
-       with its number on the camera whose row is pointed at in the Sound menu. */
+    /* Laid over the viewer (positions are the layout's, in percent): an
+       outline with its number on the camera whose row is pointed at in the
+       Sound menu. Clicks pass through to the video (e.g. VDO.Ninja's play button). */
     .tiles {
       position: absolute;
       inset: 0;
       pointer-events: none;
     }
-
-    .tile-muted {
-      position: absolute;
-      margin: 10px;
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      background: #dc2626;
-      box-shadow: 0 0 0 2px #fff;
-      color: #fff;
-      display: grid;
-      place-items: center;
-    }
-
-    .tile-muted svg { width: 16px; height: 16px; }
 
     .tile-hl {
       position: absolute;
@@ -558,13 +543,8 @@
   const renderTiles = () => {
     tiles.innerHTML = order.map((sid, i) => {
       const b = boxes[i] && picture(boxes[i]);
-      if (!b) return "";
-      const z = `z-index:${b.z}`;
-      const hl = sid === pointedAt
-        ? `<div class="tile-hl" style="left:${b.x}%;top:${b.y}%;width:${b.w}%;height:${b.h}%;${z}"><span>${numberOf(sid)}</span></div>` : "";
-      const badge = muted.has(sid)
-        ? `<div class="tile-muted" style="left:${b.x}%;bottom:${100 - b.y - b.h}%;${z}">${SOUND_OFF}</div>` : "";
-      return hl + badge;
+      if (!b || sid !== pointedAt) return "";
+      return `<div class="tile-hl" style="left:${b.x}%;top:${b.y}%;width:${b.w}%;height:${b.h}%;z-index:${b.z}"><span>${numberOf(sid)}</span></div>`;
     }).join("");
   };
 
