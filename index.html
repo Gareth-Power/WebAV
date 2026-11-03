@@ -12,8 +12,11 @@
       --panel: #ffffff;
       --accent: #2563eb;
       --text: #1d1d1f;
-      --muted: #86868b;
+      --muted: #636369; /* secondary text: 6:1 on white */
       --border: #e5e7eb;
+      /* One shadow for the page's three cards (viewer, control bar, QR card):
+         tight and even all round, no offset. */
+      --card-shadow: 0 0 20px rgba(0,0,0,0.2);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -53,23 +56,12 @@
       box-shadow: none;
     }
 
-    .btn-ghost {
-      border: 1px solid var(--border);
-      background: #fff;
-      color: var(--text);
-      border-radius: 8px;
-      padding: 8px 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 120ms ease, box-shadow 120ms ease;
-    }
-
-    .btn-ghost:hover { background: #f1f5f9; }
-
     /* 16:9 viewer stage — mirrors the patient monitor's framed display box. */
     .viewer-wrap {
       position: relative;
       padding: 0;
+      display: grid;
+      gap: 18px;
     }
 
     .viewer {
@@ -80,17 +72,206 @@
       border-radius: 14px;
       background: #000000;
       overflow: hidden;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.16);
+      box-shadow: var(--card-shadow);
     }
 
-    .viewer-fab {
-      position: absolute;
-      right: 21px;
-      bottom: 20px;
-      z-index: 2;
+    /* The viewer's controls: a white pill of buttons centred under it, a card
+       like the QR card below. A button with its menu open stays tinted blue. */
+    .viewer-bar {
+      justify-self: center;
       display: flex;
-      gap: 8px;
+      gap: 4px;
+      padding: 5px;
+      background: #fff;
+      border-radius: 999px;
+      box-shadow: var(--card-shadow);
+      z-index: 2;
     }
+
+    .bar-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
+      background: transparent;
+      color: var(--text);
+      border-radius: 999px;
+      padding: 9px 18px 9px 15px;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 120ms ease, box-shadow 120ms ease, color 120ms ease;
+    }
+
+    .bar-btn svg { width: 17px; height: 17px; flex: none; }
+    .bar-btn:hover { background: #f1f5f9; }
+    .bar-btn[aria-expanded="true"] { background: #eef3fe; color: var(--accent); }
+    .bar-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    /* Fullscreen takes the whole wrap (viewer, its markers and the
+       Sound/Layout/Fullscreen buttons), the 16:9 stage centred on black. */
+    .viewer-wrap:fullscreen {
+      display: grid;
+      place-items: center;
+      background: #000;
+    }
+
+    .viewer-wrap:fullscreen .stage { width: min(100vw, calc(100vh * 16 / 9)); }
+    .viewer-wrap:fullscreen .viewer { border-radius: 0; box-shadow: none; }
+
+    /* In fullscreen the bar floats over the bottom of the picture. */
+    .viewer-wrap:fullscreen .viewer-bar {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,0.94);
+    }
+
+    .stage { position: relative; width: 100%; }
+
+    /* Laid over the viewer on each camera's picture (positions are the
+       layout's, in percent): a red badge on a muted camera, and an outline
+       with its number on the camera whose row is pointed at in the Sound menu. */
+    .tiles {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .tile-muted {
+      position: absolute;
+      margin: 10px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #dc2626;
+      box-shadow: 0 0 0 2px #fff;
+      color: #fff;
+      display: grid;
+      place-items: center;
+    }
+
+    .tile-muted svg { width: 16px; height: 16px; }
+
+    .tile-hl {
+      position: absolute;
+      box-shadow: inset 0 0 0 3px var(--accent);
+      border-radius: 6px;
+    }
+
+    .tile-hl span {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      min-width: 28px;
+      height: 28px;
+      padding: 0 8px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 700;
+      font-size: 15px;
+      display: grid;
+      place-items: center;
+    }
+
+    /* Sound menu: one row per camera, mute toggle + volume. */
+    .sound-menu { min-width: 280px; }
+
+    .sound-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .sound-row:hover, .sound-row:focus-within { background: #f1f5f9; }
+
+    .sound-num {
+      flex: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      font-size: 12px;
+      font-weight: 700;
+      display: grid;
+      place-items: center;
+    }
+
+    .sound-name { flex: 1; white-space: nowrap; }
+
+    .sound-mute {
+      flex: none;
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 50%;
+      background: #e2e8f0;
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+
+    .sound-mute:hover { background: #cbd5e1; }
+    .sound-mute[aria-pressed="true"] { background: #dc2626; color: #fff; }
+    .sound-mute svg { width: 17px; height: 17px; }
+
+    .sound-vol { width: 110px; accent-color: var(--accent); }
+    .sound-vol:disabled { opacity: 0.4; }
+
+    .sound-empty { padding: 8px 10px; font-size: 14px; color: var(--muted); }
+
+    /* Sound and Layout menus: open upwards from their button, over the viewer. */
+    .layout-pick { position: relative; }
+
+    .layout-menu {
+      position: absolute;
+      left: 50%;
+      bottom: calc(100% + 10px);
+      transform: translateX(-50%);
+      min-width: 220px;
+      background: #fff;
+      border-radius: 12px;
+      padding: 6px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.22);
+      display: grid;
+      gap: 2px;
+    }
+
+    .layout-menu[hidden] { display: none; }
+
+    .layout-opt {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      border: none;
+      background: none;
+      border-radius: 8px;
+      padding: 7px 10px;
+      font: inherit;
+      font-size: 14px;
+      color: var(--text);
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .layout-opt:hover { background: #f1f5f9; }
+    .layout-opt[aria-checked="true"] { color: var(--accent); font-weight: 600; }
+    .layout-opt:disabled { color: #a1a1a6; cursor: default; background: none; }
+
+    .layout-opt svg { flex: none; width: 40px; height: 22.5px; }
+    .layout-opt svg rect { fill: #cbd5e1; }
+    .layout-opt svg rect.on { fill: #64748b; }
+    .layout-opt[aria-checked="true"] svg rect.on { fill: var(--accent); }
+
+    .layout-sep { height: 1px; background: var(--border); margin: 4px 6px; }
 
     /* Footer card holding the QR + camera link, matching the monitor footer. */
     .monitor-footer {
@@ -99,8 +280,9 @@
       align-items: center;
       gap: 18px;
       padding: 20px 24px;
-      background: #f5f5f7;
+      background: #fff;
       border-radius: 22px;
+      box-shadow: var(--card-shadow);
       width: fit-content;
       max-width: 100%;
       justify-self: center;
@@ -124,7 +306,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 6px 22px rgba(0,0,0,0.10);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
     }
 
     .qr-card img {
@@ -176,16 +358,27 @@
     <img src="SaIL.png" alt="SaIL logo" class="logo" />
     <div class="panel">
       <div class="viewer-wrap">
-        <iframe
-          id="viewer"
-          class="viewer"
-          title="Room viewer"
-          allow="autoplay *; camera *; microphone *; picture-in-picture *; display-capture *; clipboard-read *; clipboard-write *"
-          playsinline
-          loading="eager"
-        ></iframe>
-        <div class="viewer-fab">
-          <button id="fsBtn" class="btn-ghost" type="button">Fullscreen</button>
+        <div class="stage">
+          <iframe
+            id="viewer"
+            class="viewer"
+            title="Room viewer"
+            allow="autoplay *; camera *; microphone *; picture-in-picture *; display-capture *; clipboard-read *; clipboard-write *"
+            playsinline
+            loading="eager"
+          ></iframe>
+          <div id="tiles" class="tiles"></div>
+        </div>
+        <div class="viewer-bar">
+          <div class="layout-pick">
+            <button id="soundBtn" class="bar-btn" type="button" aria-expanded="false" aria-controls="soundMenu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg>Sound</button>
+            <div id="soundMenu" class="layout-menu sound-menu" role="group" aria-label="Camera sound" hidden></div>
+          </div>
+          <div class="layout-pick">
+            <button id="layoutBtn" class="bar-btn" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="layoutMenu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16"/><path d="M12 12h9"/></svg>Layout</button>
+            <div id="layoutMenu" class="layout-menu" role="menu" hidden></div>
+          </div>
+          <button id="fsBtn" class="bar-btn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg><span id="fsLabel">Fullscreen</span></button>
         </div>
       </div>
     </div>
@@ -221,8 +414,9 @@
     const joinLinkEl = document.getElementById("joinLink");
     const fsBtn = document.getElementById("fsBtn");
 
-  // Viewer: hide hover controls but keep the big play overlay by using controls=0 (no cleanoutput)
-  const viewerUrl = `https://vdo.ninja/?scene&room=${encodeURIComponent(room)}&controls=1&labels=0&stats=0&smallshare&transparent`;
+  // Viewer: no hover control bar on the videos (sound is in our Sound menu
+  // instead); the big play overlay stays (no cleanoutput)
+  const viewerUrl = `https://vdo.ninja/?scene&room=${encodeURIComponent(room)}&nocontrols&labels=0&stats=0&smallshare&transparent`;
   // Direct room join link for adding devices with desired audio/video params
   // Prevent cameras from seeing other feeds by hiding remote views (view=0)
   // Local join page wrapper (hides vdo.ninja URL) with room param
@@ -260,9 +454,11 @@
   });
 
   viewer.src = viewerUrl;
+  // Fullscreen is the whole wrap, so the Sound and Layout buttons come too.
+  const viewerWrap = viewer.closest(".viewer-wrap");
   const updateFsLabel = () => {
-    const active = document.fullscreenElement === viewer || document.fullscreenElement === viewer.parentElement;
-    fsBtn.textContent = active ? "Exit fullscreen" : "Fullscreen";
+    const active = document.fullscreenElement === viewerWrap;
+    document.getElementById("fsLabel").textContent = active ? "Exit fullscreen" : "Fullscreen";
   };
 
   fsBtn.addEventListener("click", async () => {
@@ -270,11 +466,7 @@
       if (document.fullscreenElement) {
         await document.exitFullscreen();
       } else {
-        if (viewer.requestFullscreen) {
-          await viewer.requestFullscreen();
-        } else if (viewer.parentElement?.requestFullscreen) {
-          await viewer.parentElement.requestFullscreen();
-        }
+        await viewerWrap.requestFullscreen();
       }
     } catch (err) {
       console.warn("Fullscreen toggle failed", err);
@@ -285,6 +477,257 @@
 
   document.addEventListener("fullscreenchange", updateFsLabel);
   updateFsLabel();
+
+  // Layouts. VDO.Ninja's scene takes a layout from the page embedding it:
+  // postMessage({layout: {<streamID>: {x, y, w, h, z, c}}}), positions and
+  // sizes in percent of the viewer, z = stacking, c = crop to fill. Cameras
+  // not in it are hidden, so it's rebuilt whenever a camera joins or leaves.
+  // Grid is ours too (not VDO.Ninja's own), so we always know where each
+  // camera is and can mark it on the viewer.
+  const layoutBtn = document.getElementById("layoutBtn");
+  const layoutMenu = document.getElementById("layoutMenu");
+
+  // Inset boxes go top right, the same
+  // distance from the top and side: 2.5% of the width is 2.5 * 16/9 % of
+  // the 16:9 height. More than one stack downwards.
+  const MX = 2.5, MY = MX * 16 / 9;
+  const box = (x, y, w, h, extra = {}) => ({ x, y, w, h, z: 0, c: false, ...extra });
+  const inset = (i, w) => box(100 - MX - w, MY + (MY + w) * i, w, w, { z: 1 + i, c: true, rounded: 10 });
+
+  // Each builds boxes for the cameras in order; the first is the main one.
+  // `icon` draws the preview in the menu (same percentages, 40x22.5 box).
+  const LAYOUTS = {
+    // Grid: as square as it gets, an unfilled last row centred.
+    grid: { label: "Grid",
+      boxes: (n) => {
+        const cols = Math.ceil(Math.sqrt(n)), rows = Math.ceil(n / cols);
+        const w = 100 / cols, h = 100 / rows;
+        return Array.from({ length: n }, (_, i) => {
+          const r = Math.floor(i / cols), inRow = r === rows - 1 ? n - r * cols : cols;
+          return box((100 - inRow * w) / 2 + (i % cols) * w, r * h, w, h);
+        });
+      },
+      icon: [[0, 0, 49, 49, 1], [51, 0, 49, 49, 1], [0, 51, 49, 49, 1], [51, 51, 49, 49, 1]] },
+    single: { label: "One camera", boxes: (n) => [box(0, 0, 100, 100)],
+      icon: [[0, 0, 100, 100, 1]] },
+    side: { label: "Side by side", boxes: (n) => [box(0, 0, 50, 100), box(50, 0, 50, 100)],
+      icon: [[0, 0, 49, 100, 1], [51, 0, 49, 100, 1]] },
+    pip: { label: "Picture in picture",
+      boxes: (n) => [box(0, 0, 100, 100), ...Array.from({ length: n - 1 }, (_, i) => inset(i, 26))],
+      icon: [[0, 0, 100, 100, 0], [70, 10, 26, 30, 1]] },
+    main: { label: "Main + others",
+      // Others are 16:9 tiles (25% of each side) centred down the right; four fit.
+      boxes: (n) => {
+        const top = (100 - 25 * Math.min(n - 1, 4)) / 2;
+        return [box(0, 0, 75, 100), ...Array.from({ length: n - 1 }, (_, i) => box(75, top + i * 25, 25, 25, { c: true }))];
+      },
+      icon: [[0, 0, 74, 100, 1], [76, 25, 24, 24, 0], [76, 51, 24, 24, 0]] },
+  };
+
+  let layoutKey = "grid";
+  let order = []; // stream IDs in the order they joined; order[0] is the main camera
+
+  const post = (msg) => viewer.contentWindow && viewer.contentWindow.postMessage(msg, "https://vdo.ninja");
+
+  // Sound is per camera: {volume (0-1), target: streamID}. VDO.Ninja also
+  // keeps the last volume sent as the one new cameras start at, so every
+  // camera's is re-sent whenever cameras join or leave.
+  const muted = new Set();
+  const levels = new Map(); // streamID -> 0..1, 1 when not set
+  const volumeOf = (sid) => (muted.has(sid) ? 0 : levels.get(sid) ?? 1);
+  const sendVolume = (sid) => post({ volume: volumeOf(sid), target: sid });
+  const sendVolumes = () => order.forEach(sendVolume);
+
+  const tiles = document.getElementById("tiles");
+  const SPEAKER = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z" fill="currentColor"/>`;
+  const SOUND_ON = `${SPEAKER}<path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg>`;
+  const SOUND_OFF = `${SPEAKER}<path d="m16 9 6 6"/><path d="m22 9-6 6"/></svg>`;
+
+  // Where the picture actually is in a box: a cropped box is filled; otherwise
+  // a 16:9 camera is fitted and centred, which in these percent units (of a
+  // 16:9 viewer) is m x m with m the smaller of w and h.
+  const picture = (b) => {
+    if (b.c) return b;
+    const m = Math.min(b.w, b.h);
+    return { ...b, x: b.x + (b.w - m) / 2, y: b.y + (b.h - m) / 2, w: m, h: m };
+  };
+
+  let boxes = [];
+  let pointedAt = null; // the camera whose row the Sound menu is pointing at
+
+  const renderTiles = () => {
+    tiles.innerHTML = order.map((sid, i) => {
+      const b = boxes[i] && picture(boxes[i]);
+      if (!b) return "";
+      const z = `z-index:${b.z}`;
+      const hl = sid === pointedAt
+        ? `<div class="tile-hl" style="left:${b.x}%;top:${b.y}%;width:${b.w}%;height:${b.h}%;${z}"><span>${numberOf(sid)}</span></div>` : "";
+      const badge = muted.has(sid)
+        ? `<div class="tile-muted" style="left:${b.x}%;bottom:${100 - b.y - b.h}%;${z}">${SOUND_OFF}</div>` : "";
+      return hl + badge;
+    }).join("");
+  };
+
+  const applyLayout = () => {
+    if (!order.length) {
+      post({ layout: false });
+      boxes = [];
+      renderTiles();
+      return;
+    }
+    boxes = LAYOUTS[layoutKey].boxes(order.length);
+    const layout = {};
+    order.forEach((sid, i) => { if (boxes[i]) layout[sid] = boxes[i]; });
+    post({ layout });
+    renderTiles();
+  };
+
+  // Keep `order` matching the room: keep known cameras where they are, add new ones at the end.
+  // `joined` is the same without "Next camera as main", so a camera keeps its number.
+  let joined = [];
+  const labels = {};
+  const numberOf = (sid) => joined.indexOf(sid) + 1;
+  const nameOf = (sid) => labels[sid] || `Camera ${numberOf(sid)}`;
+  const keepUp = (list, now) => list.filter((sid) => now.includes(sid)).concat(now.filter((sid) => !list.includes(sid)));
+
+  const syncStreams = (ids) => {
+    const now = Object.keys(ids || {});
+    Object.assign(labels, ids);
+    const next = keepUp(order, now);
+    const changed = next.length !== order.length || next.some((sid, i) => sid !== order[i]);
+    order = next;
+    joined = keepUp(joined, now);
+    if (changed) {
+      muted.forEach((sid) => { if (!order.includes(sid)) muted.delete(sid); });
+      applyLayout();
+      sendVolumes();
+      if (openMenu) openMenu.render();
+    }
+  };
+
+  window.addEventListener("message", (e) => {
+    if (e.source !== viewer.contentWindow) return;
+    const d = e.data || {};
+    if (d.streamIDs) syncStreams(d.streamIDs);
+    else if (d.action === "new-stream-added" || d.action === "hungup") post({ getStreamIDs: true });
+  });
+  // Cameras can drop without an event, so check the room every few seconds too.
+  setInterval(() => post({ getStreamIDs: true }), 3000);
+
+  const icon = (rects) =>
+    `<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${rects
+      .map(([x, y, w, h, on]) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="4"${on ? ' class="on"' : ""}/>`)
+      .join("")}</svg>`;
+
+  const renderLayoutMenu = () => {
+    const opts = Object.entries(LAYOUTS).map(([key, def]) =>
+      `<button class="layout-opt" type="button" role="menuitemradio" aria-checked="${key === layoutKey}" data-layout="${key}">${icon(def.icon)}${def.label}</button>`
+    ).join("");
+    const canSwap = order.length > 1 && LAYOUTS[layoutKey].boxes;
+    layoutMenu.innerHTML = `${opts}<div class="layout-sep"></div>
+      <button class="layout-opt" type="button" role="menuitem" data-swap ${canSwap ? "" : "disabled"}>${icon([[0, 0, 100, 100, 0]])}Next camera as main</button>`;
+  };
+
+  // Sound menu: a row per camera, in the order they joined - mute toggle and
+  // volume. Pointing at a row outlines that camera on the viewer with its number.
+  const soundBtn = document.getElementById("soundBtn");
+  const soundMenu = document.getElementById("soundMenu");
+
+  const renderSoundMenu = () => {
+    if (!joined.length) {
+      soundMenu.innerHTML = `<div class="sound-empty">No cameras yet</div>`;
+      return;
+    }
+    soundMenu.innerHTML = joined.map((sid) => {
+      const off = muted.has(sid), name = nameOf(sid);
+      const pct = Math.round((levels.get(sid) ?? 1) * 100);
+      return `<div class="sound-row" data-sid="${sid}">
+        <span class="sound-num" aria-hidden="true">${numberOf(sid)}</span>
+        <span class="sound-name">${name.replace(/[<>&"]/g, "")}</span>
+        <button class="sound-mute" type="button" aria-pressed="${off}" aria-label="Mute ${name}" title="${off ? "Unmute" : "Mute"}">${off ? SOUND_OFF : SOUND_ON}</button>
+        <input class="sound-vol" type="range" min="0" max="100" value="${pct}" aria-label="${name} volume" ${off ? "disabled" : ""}>
+      </div>`;
+    }).join("");
+  };
+
+  soundMenu.addEventListener("click", (e) => {
+    const btn = e.target.closest(".sound-mute");
+    if (!btn) return;
+    const sid = btn.closest(".sound-row").dataset.sid;
+    if (muted.has(sid)) muted.delete(sid); else muted.add(sid);
+    sendVolume(sid);
+    renderSoundMenu();
+    renderTiles();
+    soundMenu.querySelector(`[data-sid="${sid}"] .sound-mute`).focus();
+  });
+
+  soundMenu.addEventListener("input", (e) => {
+    if (!e.target.classList.contains("sound-vol")) return;
+    const sid = e.target.closest(".sound-row").dataset.sid;
+    levels.set(sid, e.target.value / 100);
+    sendVolume(sid);
+  });
+
+  const pointAt = (sid) => {
+    if (sid === pointedAt) return;
+    pointedAt = sid;
+    renderTiles();
+  };
+  const rowSid = (e) => e.target.closest?.(".sound-row")?.dataset.sid || null;
+  soundMenu.addEventListener("pointerover", (e) => pointAt(rowSid(e)));
+  soundMenu.addEventListener("pointerleave", () => pointAt(soundMenu.contains(document.activeElement) ? rowSid({ target: document.activeElement }) : null));
+  soundMenu.addEventListener("focusin", (e) => pointAt(rowSid(e)));
+
+  // The two menus: opening one closes the other.
+  const MENUS = [
+    { btn: layoutBtn, menu: layoutMenu, render: renderLayoutMenu },
+    { btn: soundBtn, menu: soundMenu, render: renderSoundMenu },
+  ];
+  let openMenu = null;
+
+  const setMenu = (m) => {
+    openMenu = m;
+    MENUS.forEach((x) => {
+      if (x === m) x.render();
+      x.menu.hidden = x !== m;
+      x.btn.setAttribute("aria-expanded", String(x === m));
+    });
+    if (m !== MENUS[1]) pointAt(null);
+  };
+
+  MENUS.forEach((m) => m.btn.addEventListener("click", () => {
+    setMenu(openMenu === m ? null : m);
+    post({ getStreamIDs: true });
+  }));
+
+  layoutMenu.addEventListener("click", (e) => {
+    const opt = e.target.closest(".layout-opt");
+    if (!opt || opt.disabled) return;
+    if ("swap" in opt.dataset) {
+      order.push(order.shift());
+      applyLayout();
+      renderLayoutMenu(); // stay open, so it can be pressed again
+      return;
+    }
+    layoutKey = opt.dataset.layout;
+    applyLayout();
+    setMenu(null);
+  });
+
+  // composedPath, not target.closest: a menu redraws on click, so by now the
+  // clicked button may no longer be in the page.
+  document.addEventListener("click", (e) => {
+    if (openMenu && !e.composedPath().some((el) => el.classList?.contains("layout-pick"))) setMenu(null);
+  });
+  // A click on the video goes to VDO.Ninja's frame, not this page; it shows as the page losing focus.
+  window.addEventListener("blur", () => { if (openMenu) setMenu(null); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && openMenu) {
+      const btn = openMenu.btn;
+      setMenu(null);
+      btn.focus();
+    }
+  });
   const joinPageHref = joinPageUrl.toString();
   applyLink(joinPageHref); // show immediately with local URL
 
